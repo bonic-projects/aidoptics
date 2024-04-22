@@ -16,7 +16,14 @@ class HardwareView extends StatelessWidget {
         // print(model.node?.lastSeen);
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Hardware'),
+            title: const Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Hardware'),
+                // Text("Trigger Status: ${model.status}", style: TextStyle(fontSize: 16),)
+              ],
+            ),
             actions: [
               // IconButton(
               //     onPressed: () {
@@ -26,11 +33,19 @@ class HardwareView extends StatelessWidget {
               //     icon: Icon(Icons.speaker),
               // ),
 
-              if (model.ip != null)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.developer_board, color: Colors.amber),
-                ),
+
+              Switch(value: model.isTimer, onChanged: (val){
+                if(val) {
+                  model.startPeriodicTimer();
+                } else {
+                  model.stopPeriodicTimer();
+                }
+              })
+              // if (model.ip != null)
+              //   const Padding(
+              //     padding: EdgeInsets.all(8.0),
+              //     child: Icon(Icons.developer_board, color: Colors.amber),
+              //   ),
             ],
           ),
           floatingActionButton: model.ip != null

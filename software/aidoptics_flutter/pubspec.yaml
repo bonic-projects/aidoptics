@@ -36,6 +36,8 @@ dependencies:
   flutter_signin_button: ^2.0.0
   lottie: ^2.2.0
 
+  #ble
+  flutter_blue_plus: ^1.31.16
 
   #Basics
   flutter_native_splash: ^2.2.19

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:aidoptics_flutter/services/ble_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 //main.dart
 // import "dart:async";
 
@@ -22,9 +24,10 @@ import '../../../services/tts_service.dart';
 // import 'package:html/parser.dart' as parser;
 // import 'package:html/dom.dart' as dom;
 
-class HardwareViewModel extends BaseViewModel {
+class HardwareViewModel extends ReactiveViewModel {
   final log = getLogger('HardwareViewModel');
 
+  // final _bleService = locator<BleService>();
   final _snackBarService = locator<SnackbarService>();
   final TTSService _ttsService = locator<TTSService>();
   final ImageProcessingService _imageProcessingService =
@@ -32,6 +35,87 @@ class HardwareViewModel extends BaseViewModel {
 
   // final _navigationService = locator<NavigationService>();
   final _ragulaService = locator<RegulaService>();
+
+  // bool get isConnected => _bleService.isBleOn;
+  // String get name => _bleService.deviceName;
+  // String get status => _bleService.status;
+  // BluetoothDevice? get device => _bleService.device;
+  // String? get data => _bleService.data;
+  // Future sendCommand(String command) async {
+  //   log.i(command);
+  //   // _bleService.writeCharacteristic("red_led");
+  //   _bleService.writeCharacteristic(command);
+  //   try {} catch (e) {
+  //     log.e(e);
+  //   }
+  // }
+  // @override
+  // List<ListenableServiceMixin> get listenableServices => [_bleService];
+  Timer? periodicTimer;
+
+  bool _isTimer= false;
+  bool get isTimer=>_isTimer;
+  void startPeriodicTimer() {
+    _isTimer = true;
+    notifyListeners();
+    periodicTimer =
+        Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
+          if(!isTrigger) {
+            getTrigger();
+          }
+        });
+  }
+
+  bool isTrigger = false;
+  void getTrigger() async {
+    // if(!isConnected || device == null) return;
+    // sendCommand("getTrigger");
+    // if (data != null && data!.isNotEmpty) {
+    //   int isTrigger = int.parse(data!);
+    //   log.i("isTrigger: $isTrigger");
+    //   notifyListeners();
+    //   // logger.i(distance);
+    //   if (isTrigger==1) {
+    //     workLabel();
+    //   }
+    // }
+
+    log.i("Calling..");
+    // _isCalled = true;
+
+    Uri uri = Uri(scheme: 'http', host: ip!, path: 'trigger');
+
+    try {
+      http.Response response = await http.get(uri);
+      log.i("Status Code: ${response.statusCode}");
+      log.i("Content Length: ${response.contentLength}");
+      log.i("Content Response: ${response.body}");
+      int trigger = 0;
+
+      if (response.statusCode == 200) {
+        final data = response.body;
+          log.i(data);
+          trigger = int.parse(data);
+          notifyListeners();
+          if(trigger == 1){
+            isTrigger = true;
+            workLabel();
+          }
+      } else {
+      }
+
+      log.i("Triggfer data: $trigger");
+    } catch (e) {
+      log.e("Error: $e");
+    }
+  }
+
+  void stopPeriodicTimer() {
+    _isTimer = false;
+    notifyListeners();
+    periodicTimer?.cancel();
+    periodicTimer = null;
+  }
 
   File? _image;
 
@@ -65,6 +149,7 @@ class HardwareViewModel extends BaseViewModel {
   @override
   void dispose() {
     // call your function here
+    stopPeriodicTimer();
     _subscription.cancel();
     super.dispose();
   }
@@ -72,8 +157,9 @@ class HardwareViewModel extends BaseViewModel {
   void workLabel() async {
     setBusy(true);
     await getImageFromHardware();
-    await getImageFromHardware();
-    await getImageFromHardware();
+    // await getImageFromHardware();
+    // await getImageFromHardware();
+
     if (_image != null) await getLabel();
   }
 
@@ -96,6 +182,7 @@ class HardwareViewModel extends BaseViewModel {
 
     String text = _imageProcessingService.processLabels(_labels);
     await _ttsService.speak(text);
+    isTrigger = false;
     if (text == "Person detected") {
       await Future.delayed(const Duration(milliseconds: 2000));
       return processFace();
@@ -132,8 +219,8 @@ class HardwareViewModel extends BaseViewModel {
   Future workText() async {
     setBusy(true);
     await getImageFromHardware();
-    await getImageFromHardware();
-    await getImageFromHardware();
+    // await getImageFromHardware();
+    // await getImageFromHardware();
     if (_image != null)  getText();
   }
 
@@ -148,7 +235,7 @@ class HardwareViewModel extends BaseViewModel {
    
 
     _text = await _imageProcessingService.getTextFromImage(_image!);
-
+    isTrigger = false;
     setBusy(false);
 
     // _image != await _ttsService.speak(_texts);
@@ -200,6 +287,7 @@ class HardwareViewModel extends BaseViewModel {
   double _distanceRight = 0;
   double get distanceRight => _distanceRight;
   Future getUltrasonicDistanceFromHardware() async {
+    // isTrigger = true;
     log.i("Calling..");
     // _isCalled = true;
 
@@ -232,6 +320,7 @@ class HardwareViewModel extends BaseViewModel {
       }
 
       log.i("Distance data: $distance1 $distance2");
+      // isTrigger = false;
     } catch (e) {
       log.e("Error: $e");
     }

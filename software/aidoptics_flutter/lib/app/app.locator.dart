@@ -12,6 +12,7 @@ import 'package:stacked_services/src/navigation/navigation_service.dart';
 import 'package:stacked_services/src/snackbar/snackbar_service.dart';
 import 'package:stacked_shared/stacked_shared.dart';
 
+import '../services/ble_service.dart';
 import '../services/camera_service.dart';
 import '../services/imageprocessing_service.dart';
 import '../services/regula_service.dart';
@@ -36,4 +37,5 @@ Future<void> setupLocator({
   locator.registerLazySingleton(() => ImageProcessingService());
   locator.registerLazySingleton(() => RegulaService());
   locator.registerLazySingleton(() => CameraService());
+  locator.registerLazySingleton(() => BleService());
 }

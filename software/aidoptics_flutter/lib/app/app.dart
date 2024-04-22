@@ -1,3 +1,4 @@
+import 'package:aidoptics_flutter/services/ble_service.dart';
 import 'package:stacked/stacked_annotations.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -34,6 +35,7 @@ import 'package:aidoptics_flutter/ui/views/text/text_view.dart';
     LazySingleton(classType: ImageProcessingService),
     LazySingleton(classType: RegulaService),
     LazySingleton(classType: CameraService),
+    LazySingleton(classType: BleService),
     // @stacked-service
   ],
   bottomsheets: [
